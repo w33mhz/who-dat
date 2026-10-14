@@ -1,0 +1,11 @@
+import test from "node:test";import assert from "node:assert/strict";
+import {PACKS,Q} from "../src/data.js";
+import {has,questionsFor,rank,filter,validatePack,resolve,reactionEvents} from "../src/engine.js";
+const all=PACKS.flatMap(p=>p.chars),ids=all.map((_,i)=>i),keys=questionsFor(all,Q);
+test("every built-in pack set has unique, solvable characters",()=>assert.deepEqual(validatePack(all,keys),[]));
+test("each pack is valid on its own",()=>{for(const p of PACKS){const k=questionsFor(p.chars,Q);assert.deepEqual(validatePack(p.chars,k),[],p.id)}});
+test("filter keeps only matching answers",()=>{const f=filter(all,ids,"wings",true);assert.ok(f.length&&f.every(i=>has(all[i],"wings")))});
+test("rank never offers a non-splitting or asked question",()=>{const r=rank(all,ids,["wings"],keys);assert.ok(r.every(o=>o.k!=="wings"&&o.n>0&&o.n<ids.length))});
+test("greedy questions always solve any secret",()=>{for(let s=0;s<all.length;s++){let c=ids,asked=[];while(c.length>1){const o=rank(all,c,asked,keys);assert.ok(o.length,"stuck");asked.push(o[0].k);c=filter(all,c,o[0].k,resolve(all[s],o[0].k))}assert.equal(c[0],s)}});
+test("reactions match trait truth",()=>assert.ok(reactionEvents(all,"hat").every(e=>e.match===has(all[e.i],"hat"))));
+test("validatePack flags duplicates",()=>assert.ok(validatePack([{n:"a",t:["x"]},{n:"b",t:["x"]},{n:"c",t:[]},{n:"d",t:["y"]}],["x"]).length));

@@ -6,33 +6,36 @@ A family-friendly, Guess Who-style browser game. Ask yes/no questions, watch the
 
 ## Run locally
 
-It's a single static file, so no build step is needed:
+The game uses ES modules, so serve the folder rather than opening the file directly:
 
 ```bash
-open index.html            # or just double-click it
-# or serve it:
-python3 -m http.server 8000
+npm start          # python3 -m http.server 8000, then open http://localhost:8000
+npm test           # rules tests (Node 20+)
 ```
 
-## What's in this version ("Core")
+## What's in this version
 
-- 24 emoji characters across people, fantasy, animals and food
-- 15 yes/no traits driving the question list
-- Computer opponent (Beginner or Clever)
-- Reaction animations on matching characters (presentation only)
-- Smart hints that suggest the best-splitting question
-- Auto-eliminate, calm-motion mode, keyboard and screen-reader labels
+- 5 mixable packs (30 characters): Funny Faces, Fantasy & Creatures, Animals & Pets, Food Fight, Seasonal Specials
+- Play the computer (Beginner or Clever) or a second player on one device (pass-and-play with a privacy screen)
+- Reaction animations on every question, for Yes and No
+- Smart hints that suggest the best-splitting question without revealing the secret
+- Auto-eliminate, calm-motion mode, optional spoken answers, keyboard and screen-reader labels
 
 ## Project layout
 
 ```
-index.html                 the whole game (HTML + CSS + JS)
-docs/ROADMAP.md            milestones from the design spec
+index.html        UI (setup screen, board, pass-and-play)
+src/data.js       packs, characters, questions, reactions
+src/engine.js     pure rules: resolve, filter, rank, validate (no DOM)
+test/             node:test rule tests
+docs/DESIGN.md    game design specification
+docs/ROADMAP.md   milestones and status
 .github/workflows/pages.yml  deploys to GitHub Pages on push to main
 ```
 
-Character and trait data (`C`, `Q`, `R` in `index.html`) are kept separate from rendering and reactions, so character packs can be split out later.
+Traits are rules; reactions are presentation. Keeping them separate means animations can never change an answer.
 
-## Roadmap
+## Docs
 
-See [docs/ROADMAP.md](docs/ROADMAP.md).
+- [Design specification](docs/DESIGN.md)
+- [Roadmap](docs/ROADMAP.md)

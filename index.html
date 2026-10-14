@@ -3,146 +3,136 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Who Dat?</title>
 <style>
-:root{--bg:#fff8ec;--fg:#2b2340;--card:#fff;--line:#e4d6bd;--acc:#7c4dff;--accfg:#fff;--ok:#12814a;--bad:#c93a46;--mut:#6b6280;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17132b;--fg:#f3eefc;--card:#262042;--line:#3d3560;--acc:#a98bff;--accfg:#17132b;--ok:#4fd18b;--bad:#ff7b86;--mut:#aaa2c6;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#17132b;--fg:#f3eefc;--card:#262042;--line:#3d3560;--acc:#a98bff;--accfg:#17132b;--ok:#4fd18b;--bad:#ff7b86;--mut:#aaa2c6;color-scheme:dark}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100%}
+:root{--bg:#fff8ec;--fg:#2b2340;--card:#fff;--line:#e4d6bd;--acc:#7c4dff;--accfg:#fff;--ok:#12814a;--bad:#c93a46;--mut:#6b6280;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#17132b;--fg:#f3eefc;--card:#262042;--line:#3d3560;--acc:#a98bff;--accfg:#17132b;--ok:#4fd18b;--bad:#ff7b86;--mut:#aaa2c6;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#17132b;--fg:#f3eefc;--card:#262042;--line:#3d3560;--acc:#a98bff;--accfg:#17132b;--ok:#4fd18b;--bad:#ff7b86;--mut:#aaa2c6;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
 .wrap{max-width:1040px;margin:0 auto;padding:12px}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
-h1{margin:0;font-size:1.6rem;letter-spacing:-.5px}
-.me{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:4px 10px;font-size:.9rem}
-.me b{font-size:1.4rem;vertical-align:middle}
-#status{margin:10px 0 6px;font-weight:600;min-height:1.5em}
-#ans{min-height:2.2em;font-size:1.3rem;font-weight:800}
-#ans.y{color:var(--ok)}#ans.n{color:var(--bad)}
+h1{margin:0 0 8px;font-size:1.6rem}h2{margin:0 0 8px;font-size:1rem}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+button,select{font:inherit}
+button.act,button.q{border:2px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:8px 12px;cursor:pointer;font-size:.85rem}
+button.act{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:700}
+button.act.alt{background:var(--bg);color:var(--fg);border-color:var(--line)}
+button.q.hl{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
+button:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.packs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.packs label{border:2px solid var(--line);border-radius:10px;padding:8px;display:flex;gap:8px;align-items:center;cursor:pointer}
+.err{color:var(--bad);font-size:.85rem;min-height:1.2em}
 .main{display:grid;gap:14px;grid-template-columns:1fr}
 @media(min-width:840px){.main{grid-template-columns:1fr 320px}}
 #board{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
-.card{position:relative;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--fg);font:inherit;cursor:pointer;transition:transform .35s,opacity .35s}
-.card b{font-size:2.3rem;line-height:1.1}
-.card span{font-size:.72rem;font-weight:600;text-align:center}
-.card:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.card{position:relative;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;color:var(--fg);font:inherit;cursor:pointer;transition:transform .35s,opacity .35s}
+.card b{font-size:2.3rem;line-height:1.1}.card span{font-size:.72rem;font-weight:600;text-align:center}
 .card.out{opacity:.38;filter:grayscale(1);transform:scaleY(.88) translateY(6px);border-style:dashed}
 .card.out::after{content:"OUT";position:absolute;top:3px;left:5px;font-size:.6rem;font-weight:800;color:var(--bad)}
 #board.g .card:not(.out){border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
 .badge{position:absolute;top:-6px;right:-4px;font-style:normal;font-size:1.2rem}
-.card.yes{animation:hop .6s ease 2;border-color:var(--ok)}
-.card.no{animation:nope .5s ease 1;border-color:var(--bad)}
-@keyframes hop{50%{transform:translateY(-10px) rotate(-6deg)}}
-@keyframes nope{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.card.yes{animation:hop .6s ease 2;border-color:var(--ok)}.card.no{animation:nope .5s;border-color:var(--bad)}
+@keyframes hop{50%{transform:translateY(-10px) rotate(-6deg)}}@keyframes nope{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 body.calm .card{animation:none!important;transition:none}
 @media(prefers-reduced-motion:reduce){.card{animation:none!important;transition:none}}
-.panel{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px}
-.panel h2{margin:0 0 8px;font-size:1rem}
 #qs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-button.q,button.act{font:inherit;font-size:.82rem;border:2px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:7px 6px;cursor:pointer}
-button.q.hl{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
-button:disabled{opacity:.4;cursor:not-allowed}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
-button.act{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:700;font-size:.9rem;padding:8px 12px}
-button.act.alt{background:var(--bg);color:var(--fg);border-color:var(--line)}
-#hint{font-size:.85rem;color:var(--mut);margin-top:8px;min-height:2.4em}
-#log{margin:0;padding-left:18px;font-size:.82rem;max-height:170px;overflow:auto}
-label{font-size:.85rem}
-#end{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
-#end.on{display:flex}
-#end div{background:var(--card);border-radius:16px;padding:22px;max-width:380px;text-align:center}
-#end p{margin:0 0 12px;font-size:1.1rem;font-weight:700}
+#ans{min-height:2em;font-size:1.2rem;font-weight:800}#ans.y{color:var(--ok)}#ans.n{color:var(--bad)}
+#hint{font-size:.85rem;color:var(--mut);min-height:2.4em;margin-top:8px}
+#log{margin:0;padding-left:18px;font-size:.82rem;max-height:150px;overflow:auto}
+.ov{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;z-index:5;text-align:center}
+.ov.on{display:flex}.ov p{font-size:1.2rem;font-weight:700}
+.hide{display:none}
 </style></head>
 <body><div class="wrap">
-<header><h1>🕵️ Who Dat?</h1><div class="me" id="me"></div></header>
-<div id="status" aria-live="polite"></div>
-<div id="ans" aria-live="assertive"></div>
-<div class="main">
- <div id="board" role="group" aria-label="Character board"></div>
- <aside>
-  <div class="panel"><h2>Ask a question</h2><div id="qs"></div>
-   <div class="row"><button class="act alt" id="hintBtn">💡 Hint</button><button class="act" id="guessBtn">I know who!</button></div>
-   <div id="hint"></div></div>
-  <div class="panel" style="margin-top:12px"><h2>History</h2><ol id="log"></ol></div>
-  <div class="panel" style="margin-top:12px"><h2>Settings</h2>
-   <div class="row" style="margin-top:0"><label>Computer <select id="diff"><option value="easy">Beginner</option><option value="hard">Clever</option></select></label>
-   <label><input type="checkbox" id="auto" checked> Auto-eliminate</label>
-   <label><input type="checkbox" id="calm"> Calm motion</label></div>
-   <div class="row"><button class="act alt" id="newBtn">New game</button></div></div>
- </aside>
-</div></div>
-<div id="end" role="dialog" aria-modal="true"><div><p id="endMsg"></p><button class="act" id="again">Play again</button></div></div>
-<script>
-const C=`Prof Pickles|🧐|human glasses mustache hat
-Granny Gus|👵|human glasses
-Captain Beard|🧔|human mustache red
-Cool Kai|😎|human glasses hat
-Wizard Wally|🧙|human magic hat mustache
-Santa Sam|🎅|human hat mustache red
-Ember|🐉|fantasy wings tail horns green
-Fairy Fern|🧚|fantasy wings magic green
-Zorp|👽|fantasy green
-Fiona Fiend|👹|fantasy horns red
-Unie|🦄|fantasy animal horns magic tail fur
-Ghostie|👻|fantasy
-Rex|🦖|animal tail green
-Leo|🦁|animal fur tail
-Penny|🐧|animal wings
-Bea|🐝|animal wings tail
-Fox Finn|🦊|animal fur tail red
-Panda Pat|🐼|animal fur
-Cheesy Pete|🍕|food cheese red
-Sir Burger|🍔|food cheese
-Strawberry Sue|🍓|food red green
-Taco Tito|🌮|food cheese green
-Cherry Pop|🍒|food red tail
-Corn Cob|🌽|food green`.split("\n").map(l=>{const[n,e,t]=l.split("|");return{n,e,t:t.split(" ")}});
-const Q={human:"Is your character a person?",animal:"Is your character an animal?",food:"Is your character food?",fantasy:"Is your character a fantasy creature?",glasses:"Does your character wear glasses?",hat:"Does your character wear a hat?",mustache:"Does your character have a mustache?",wings:"Does your character have wings?",tail:"Does your character have a tail?",horns:"Does your character have horns?",magic:"Does your character use magic?",cheese:"Does your character have cheese?",red:"Does your character have something red?",green:"Does your character have something green?",fur:"Does your character have fur?"};
-const R={human:"👋",animal:"🐾",food:"😋",fantasy:"✨",glasses:"😉",hat:"🎩",mustache:"➰",wings:"🕊️",tail:"🐾",horns:"😈",magic:"✨",cheese:"👍",red:"❤️",green:"💚",fur:"🧶"};
-const $=s=>document.querySelector(s),rnd=n=>Math.floor(Math.random()*n),ALL=C.map((_,i)=>i);
-const has=(i,k)=>C[i].t.includes(k);
-const opts=(cand,asked)=>Object.keys(Q).filter(k=>!asked.includes(k)).map(k=>({k,n:cand.filter(i=>has(i,k)).length})).filter(o=>o.n>0&&o.n<cand.length).sort((a,b)=>Math.abs(a.n-cand.length/2)-Math.abs(b.n-cand.length/2));
-let S;
-function newGame(){S={me:rnd(24),cpu:rnd(24),mc:[...ALL],cc:[...ALL],out:new Set(),ma:[],ca:[],turn:"me",over:false,busy:false,guess:false,log:[],hl:null};$("#end").classList.remove("on");$("#ans").textContent="";$("#hint").textContent="";render()}
-function render(){
- $("#me").innerHTML=`Your secret: <b>${C[S.me].e}</b> ${C[S.me].n}`;
- $("#board").className=S.guess?"g":"";
- $("#board").innerHTML=C.map((c,i)=>`<button class="card${S.out.has(i)?" out":""}" data-i="${i}" aria-label="${c.n}${S.out.has(i)?", eliminated":""}"><b>${c.e}</b><span>${c.n}</span><i class="badge"></i></button>`).join("");
- const my=S.turn==="me"&&!S.over&&!S.busy;
- $("#qs").innerHTML=Object.keys(Q).map(k=>`<button class="q${S.hl===k?" hl":""}" data-k="${k}" ${!my||S.ma.includes(k)?"disabled":""}>${Q[k].replace("Does your character ","").replace("Is your character ","Is ").replace("?","")}?</button>`).join("");
- $("#hintBtn").disabled=!my;$("#guessBtn").disabled=!my;$("#guessBtn").textContent=S.guess?"Cancel guess":"I know who!";
- $("#log").innerHTML=S.log.map(l=>`<li>${l}</li>`).join("");
- $("#status").textContent=S.over?"Game over":S.guess?"Tap the character you think is the computer's secret.":my?`Your turn — about ${S.mc.length} possible. Ask a question or tap cards to cross them out.`:"Computer is thinking…";
+<h1>🕵️ Who Dat?</h1>
+<section id="setup">
+ <div class="panel"><h2>1. Choose character packs (mix as many as you like)</h2><div class="packs" id="packs"></div><div class="err" id="err"></div></div>
+ <div class="panel"><h2>2. Choose how to play</h2><div class="row">
+  <label>Opponent <select id="mode"><option value="cpu">Computer</option><option value="2p">Second player (pass the device)</option></select></label>
+  <label id="dl">Computer <select id="diff"><option value="easy">Beginner</option><option value="hard">Clever</option></select></label></div>
+  <div class="row"><label><input type="checkbox" id="auto"> Auto-eliminate</label><label><input type="checkbox" id="calm"> Calm motion</label><label><input type="checkbox" id="speak"> Read answers aloud</label></div></div>
+ <button class="act" id="start">Start game</button>
+</section>
+<section id="game" class="hide">
+ <div class="row" style="margin:0 0 6px"><b id="who"></b><span id="secret" class="panel" style="margin:0;padding:4px 10px"></span></div>
+ <div id="status" aria-live="polite" style="font-weight:600"></div><div id="ans" aria-live="assertive"></div>
+ <div class="main"><div id="board" role="group" aria-label="Character board"></div>
+ <aside><div class="panel"><h2>Ask a question</h2><div id="qs"></div>
+  <div class="row"><button class="act alt" id="hintBtn">💡 Hint</button><button class="act" id="guessBtn">I know who!</button></div><div id="hint"></div></div>
+ <div class="panel"><h2>History</h2><ol id="log"></ol></div>
+ <button class="act alt" id="menu">⚙ Setup / new game</button></aside></div>
+</section></div>
+<div class="ov" id="pass" role="dialog" aria-modal="true"><div><p id="passMsg"></p><button class="act" id="ready">I'm ready</button></div></div>
+<div class="ov" id="end" role="dialog" aria-modal="true"><div><p id="endMsg"></p><button class="act" id="again">Play again</button></div></div>
+<script type="module">
+import {PACKS,Q,R} from "./src/data.js";
+import {has,questionsFor,rank,filter,resolve,reactionEvents,validatePack} from "./src/engine.js";
+const $=s=>document.querySelector(s),rnd=n=>Math.floor(Math.random()*n);
+let cfg={packs:["funny","fantasy","animals","food"],mode:"cpu",diff:"easy",auto:true,calm:false,speak:false};
+try{Object.assign(cfg,JSON.parse(localStorage.getItem("whodat-cfg")||"{}"))}catch{}
+const save=()=>{try{localStorage.setItem("whodat-cfg",JSON.stringify(cfg))}catch{}};
+const say=t=>{if(cfg.speak&&window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t))}};
+const label=k=>Q[k].replace("Does your character ","").replace("Is your character ","Is ").replace("?","")+"?";
+const chars=()=>PACKS.filter(p=>cfg.packs.includes(p.id)).flatMap(p=>p.chars);
+// ---- setup ----
+$("#packs").innerHTML=PACKS.map(p=>`<label><input type="checkbox" value="${p.id}"> <span>${p.emoji} ${p.name} (${p.chars.length})</span></label>`).join("");
+function syncSetup(){
+ document.querySelectorAll("#packs input").forEach(i=>i.checked=cfg.packs.includes(i.value));
+ $("#mode").value=cfg.mode;$("#diff").value=cfg.diff;$("#auto").checked=cfg.auto;$("#calm").checked=cfg.calm;$("#speak").checked=cfg.speak;
+ $("#dl").classList.toggle("hide",cfg.mode!=="cpu");document.body.classList.toggle("calm",cfg.calm);
+ const c=chars(),iss=validatePack(c,questionsFor(c,Q));$("#err").textContent=iss.join(" ");$("#start").disabled=!!iss.length;}
+$("#packs").onchange=()=>{cfg.packs=[...document.querySelectorAll("#packs input:checked")].map(i=>i.value);save();syncSetup()};
+for(const [id,key] of [["mode","mode"],["diff","diff"]])$("#"+id).onchange=e=>{cfg[key]=e.target.value;save();syncSetup()};
+for(const k of ["auto","calm","speak"])$("#"+k).onchange=e=>{cfg[k]=e.target.checked;save();syncSetup()};
+// ---- game ----
+let S,C,keys;
+function start(){
+ C=chars();keys=questionsFor(C,Q);const all=C.map((_,i)=>i),a=rnd(C.length);let b;do b=rnd(C.length);while(b===a&&C.length>1);
+ const mk=(name,secret,cpu)=>({name,secret,cpu,cand:[...all],out:new Set(),asked:[],log:[]});
+ S={p:[mk("Player 1",a,false),mk(cfg.mode==="cpu"?"Computer":"Player 2",b,cfg.mode==="cpu")],turn:0,view:0,busy:false,guess:false,over:false,hl:null};
+ $("#setup").classList.add("hide");$("#game").classList.remove("hide");$("#end").classList.remove("on");$("#ans").textContent="";$("#hint").textContent="";
+ if(cfg.mode==="2p")handoff();else render();
 }
-function react(k){document.querySelectorAll(".card").forEach(el=>{const i=+el.dataset.i,y=has(i,k);el.classList.add(y?"yes":"no");el.querySelector(".badge").textContent=y?R[k]:"🤷"});}
+function handoff(){S.view=S.turn;$("#passMsg").textContent=`Pass the device to ${S.p[S.turn].name}. Don't peek, ${S.p[1-S.turn].name}!`;$("#pass").classList.add("on");$("#ans").textContent="";$("#hint").textContent="";render();$("#ready").focus()}
+$("#ready").onclick=()=>$("#pass").classList.remove("on");
+function render(){
+ const v=S.p[S.view],mine=!S.busy&&!S.over&&!v.cpu&&S.turn===S.view;
+ $("#who").textContent=cfg.mode==="2p"?v.name:"You";$("#secret").innerHTML=`Your secret: <b>${C[v.secret].e}</b> ${C[v.secret].n}`;
+ $("#board").className=S.guess?"g":"";
+ $("#board").innerHTML=C.map((c,i)=>`<button class="card${v.out.has(i)?" out":""}" data-i="${i}" aria-label="${c.n}${v.out.has(i)?", eliminated":""}"><b>${c.e}</b><span>${c.n}</span><i class="badge"></i></button>`).join("");
+ $("#qs").innerHTML=keys.map(k=>`<button class="q${S.hl===k?" hl":""}" data-k="${k}" ${!mine||v.asked.includes(k)?"disabled":""}>${label(k)}</button>`).join("");
+ $("#hintBtn").disabled=!mine;$("#guessBtn").disabled=!mine;$("#guessBtn").textContent=S.guess?"Cancel guess":"I know who!";
+ $("#log").innerHTML=v.log.map(l=>`<li>${l}</li>`).join("");
+ $("#status").textContent=S.over?"Game over":S.guess?"Tap the character you think is your opponent's secret.":mine?`Your turn — about ${v.cand.length} possible. Ask a question or tap cards to cross them out.`:"Computer is thinking…";
+}
 function ask(k){
- if(S.turn!=="me"||S.over||S.busy||S.ma.includes(k))return;
- const a=has(S.cpu,k);S.ma.push(k);S.mc=S.mc.filter(i=>has(i,k)===a);S.hl=null;
- S.log.unshift(`You: ${Q[k]} → <b>${a?"Yes":"No"}</b>`);S.busy=true;S.turn="cpu";
- const el=$("#ans");el.className=a?"y":"n";el.textContent=(a?"Yes! ":"No! ")+Q[k];
- render();react(k);$("#hint").textContent="";
- setTimeout(()=>{if($("#auto").checked)S.mc.length&&(S.out=new Set(ALL.filter(i=>!S.mc.includes(i))));S.busy=false;render()},1300);
- setTimeout(cpu,1900);
+ const me=S.p[S.turn],opp=S.p[1-S.turn];if(S.busy||S.over||me.asked.includes(k))return;
+ const a=resolve(C[opp.secret],k);me.asked.push(k);me.cand=filter(C,me.cand,k,a);me.log.unshift(`${label(k)} → <b>${a?"Yes":"No"}</b>`);S.hl=null;S.busy=true;
+ const el=$("#ans");el.className=a?"y":"n";el.textContent=(a?"Yes! ":"No! ")+label(k);say((a?"Yes. ":"No. ")+Q[k]);render();
+ for(const e of reactionEvents(C,k)){const c=$("#board").children[e.i];c.classList.add(e.match?"yes":"no");c.querySelector(".badge").textContent=e.match?R[k]:"🤷"}
+ $("#hint").textContent="";
+ setTimeout(()=>{if(cfg.auto&&me.cand.length)me.out=new Set(C.map((_,i)=>i).filter(i=>!me.cand.includes(i)));S.busy=false;S.turn=1-S.turn;
+  if(cfg.mode==="2p")handoff();else{S.busy=true;render();setTimeout(cpu,500)}},1300);
 }
 function cpu(){
- if(S.over)return;
- if(S.cc.length<=1)return end(false,`The computer guessed ${C[S.me].e} ${C[S.me].n}. It was your character — computer wins!`);
- const o=opts(S.cc,S.ca);if(!o.length)return end(false,"The computer guessed right. Computer wins!");
- const k=$("#diff").value==="hard"?o[0].k:o[rnd(o.length)].k,a=has(S.me,k);
- S.ca.push(k);S.cc=S.cc.filter(i=>has(i,k)===a);S.turn="me";
- S.log.unshift(`🤖 ${Q[k]} → <b>${a?"Yes":"No"}</b>`);
- const el=$("#ans");el.className=a?"y":"n";el.textContent=`🤖 asks: ${Q[k]} Answer: ${a?"Yes":"No"}`;render();
+ const me=S.p[1],opp=S.p[0];if(S.over)return;
+ const o=rank(C,me.cand,me.asked,keys);
+ if(me.cand.length<=1||!o.length)return end(1,`The computer guessed ${C[opp.secret].e} ${C[opp.secret].n} — your character. Computer wins!`);
+ const k=cfg.diff==="hard"?o[0].k:o[rnd(o.length)].k,a=resolve(C[opp.secret],k);
+ me.asked.push(k);me.cand=filter(C,me.cand,k,a);opp.log.unshift(`🤖 ${label(k)} → <b>${a?"Yes":"No"}</b>`);
+ $("#ans").className=a?"y":"n";$("#ans").textContent=`🤖 asks: ${label(k)} Answer: ${a?"Yes":"No"}`;say(`The computer asks: ${Q[k]} ${a?"Yes":"No"}`);
+ S.busy=false;S.turn=0;render();
 }
-function end(win,msg){S.over=true;$("#endMsg").textContent=(win?"🎉 ":"😬 ")+msg;$("#end").classList.add("on");render();$("#again").focus()}
-$("#board").addEventListener("click",e=>{const c=e.target.closest(".card");if(!c||S.over||S.busy)return;const i=+c.dataset.i;
- if(S.guess){const ok=i===S.cpu;return end(ok,ok?`You got it! It was ${C[i].e} ${C[i].n}.`:`Not quite — it was ${C[S.cpu].e} ${C[S.cpu].n}. Computer wins!`)}
- S.out.has(i)?S.out.delete(i):S.out.add(i);render()});
-$("#qs").addEventListener("click",e=>{const b=e.target.closest("[data-k]");if(b)ask(b.dataset.k)});
-$("#hintBtn").onclick=()=>{
- if(S.mc.length===1){$("#hint").textContent="Only one character fits every answer so far — make your guess!";return}
- const o=opts(S.mc,S.ma);if(!o.length){$("#hint").textContent="No question splits the remaining characters. Time to guess!";return}
- const b=o[0];S.hl=b.k;render();
- $("#hint").textContent=`Try “${Q[b.k]}” — ${b.n} of ${S.mc.length} remaining would say Yes, so it should rule out about ${b.n<S.mc.length/2?"half or more":"half"} of them.`};
+function end(w,msg){S.over=true;$("#endMsg").textContent=(S.p[w].cpu?"😬 ":"🎉 ")+msg;$("#end").classList.add("on");render();say(msg);$("#again").focus()}
+$("#board").onclick=e=>{const c=e.target.closest(".card");if(!c||S.over||S.busy)return;const i=+c.dataset.i,v=S.p[S.view];
+ if(S.guess){const me=S.p[S.turn],opp=S.p[1-S.turn],ok=i===opp.secret;return end(ok?S.turn:1-S.turn,ok?`${me.name} got it! It was ${C[i].e} ${C[i].n}.`:`Not quite — it was ${C[opp.secret].e} ${C[opp.secret].n}. ${opp.name} wins!`)}
+ v.out.has(i)?v.out.delete(i):v.out.add(i);render()};
+$("#qs").onclick=e=>{const b=e.target.closest("[data-k]");if(b)ask(b.dataset.k)};
+$("#hintBtn").onclick=()=>{const v=S.p[S.view];if(v.cand.length===1){$("#hint").textContent="Only one character fits every answer so far — make your guess!";return}
+ const b=rank(C,v.cand,v.asked,keys)[0];if(!b){$("#hint").textContent="No question splits the rest. Time to guess!";return}
+ S.hl=b.k;render();$("#hint").textContent=`Try “${Q[b.k]}” — ${b.n} of ${v.cand.length} remaining would say Yes, so it should rule out about ${Math.round(Math.min(b.n,v.cand.length-b.n)/v.cand.length*100)}% or more of them.`};
 $("#guessBtn").onclick=()=>{S.guess=!S.guess;render()};
-$("#newBtn").onclick=newGame;$("#again").onclick=newGame;
-$("#calm").onchange=e=>document.body.classList.toggle("calm",e.target.checked);
-newGame();
+$("#start").onclick=start;$("#again").onclick=start;
+$("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.remove("hide");$("#pass").classList.remove("on");syncSetup()};
+syncSetup();
 </script></body></html>

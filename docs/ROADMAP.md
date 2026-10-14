@@ -1,26 +1,29 @@
 # Roadmap
 
-Milestones from the Who Dat? design spec. Checked items are in `index.html` today.
+Status against [DESIGN.md](DESIGN.md). Checked items work in `index.html` today.
 
-## 1. Foundation: core playable game
+## 1. Foundation (Core)
 - [x] Responsive board, trait engine, elimination, final guess
-- [x] Basic computer opponent, smart hints
-- [x] Reaction animations (emoji badges)
+- [x] Computer opponent (Beginner / Clever), smart hints
+- [x] Reaction animations (emoji badges, Yes and No)
+- [x] Engine split from UI (`src/engine.js`) with tests
+- [x] Five built-in packs, mixable, selection saved in the browser
+- [ ] Sixth pack "Our People" (needs the Studio)
 - [ ] Illustrated (SVG) characters instead of emoji
-- [ ] Split game engine from UI, with deterministic rule tests
+- [ ] Undo accidental elimination, large-board search/filters
 
 ## 2. Multiplayer
-- [ ] Local pass-and-play with privacy screen
-- [ ] Online rooms with room codes and server-authoritative answers
+- [x] Local pass-and-play with privacy screen
+- [ ] Online rooms, room codes, server-authoritative answers, reconnection
 
 ## 3. Creativity
 - [ ] Character Studio (traits, reactions, photo characters)
-- [ ] Six themed packs, mix-and-match boards, import/export
+- [ ] Collection import/export and sharing
 
 ## 4. Intelligence
 - [ ] AI-generated packs with validation
-- [ ] Stronger opponents, rule variants (Speed Round, Twenty Questions, Big Board)
+- [ ] Rule variants: Speed Round, Twenty Questions, Big Board, Mystery Mix
 
 ## 5. Polish
-- [ ] Voice narration, sound controls, richer animations
-- [ ] Optional sharing of collections
+- [x] Optional spoken answers (browser text-to-speech)
+- [ ] Sound effects, richer animations, community collections
