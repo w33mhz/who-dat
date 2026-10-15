@@ -35,7 +35,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 @keyframes hop{50%{transform:translateY(-10px) rotate(-6deg)}}@keyframes nope{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 body.calm .card{animation:none!important;transition:none}
 @media(prefers-reduced-motion:reduce){.card{animation:none!important;transition:none}}
-#qs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#qs{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:320px;overflow:auto}
 #ans{min-height:2em;font-size:1.2rem;font-weight:800}#ans.y{color:var(--ok)}#ans.n{color:var(--bad)}
 #hint{font-size:.85rem;color:var(--mut);min-height:2.4em;margin-top:8px}
 #log{margin:0;padding-left:18px;font-size:.82rem;max-height:150px;overflow:auto}

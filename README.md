@@ -15,7 +15,7 @@ npm test           # rules tests (Node 20+)
 
 ## What's in this version
 
-- 5 mixable packs (30 characters): Funny Faces, Fantasy & Creatures, Animals & Pets, Food Fight, Seasonal Specials
+- 5 mixable packs (60 characters, 12 each): Funny Faces, Fantasy & Creatures, Animals & Pets, Food Fight, Seasonal Specials
 - Play the computer (Beginner or Clever) or a second player on one device (pass-and-play with a privacy screen)
 - Reaction animations on every question, for Yes and No
 - Smart hints that suggest the best-splitting question without revealing the secret

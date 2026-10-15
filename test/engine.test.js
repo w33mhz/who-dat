@@ -9,3 +9,5 @@ test("rank never offers a non-splitting or asked question",()=>{const r=rank(all
 test("greedy questions always solve any secret",()=>{for(let s=0;s<all.length;s++){let c=ids,asked=[];while(c.length>1){const o=rank(all,c,asked,keys);assert.ok(o.length,"stuck");asked.push(o[0].k);c=filter(all,c,o[0].k,resolve(all[s],o[0].k))}assert.equal(c[0],s)}});
 test("reactions match trait truth",()=>assert.ok(reactionEvents(all,"hat").every(e=>e.match===has(all[e.i],"hat"))));
 test("validatePack flags duplicates",()=>assert.ok(validatePack([{n:"a",t:["x"]},{n:"b",t:["x"]},{n:"c",t:[]},{n:"d",t:["y"]}],["x"]).length));
+test("every built-in pack has 12 characters with unique ids",()=>{for(const p of PACKS)assert.equal(p.chars.length,12,p.id);assert.equal(new Set(all.map(c=>c.id)).size,all.length)});
+test("no two built-in characters share an emoji",()=>assert.equal(new Set(all.map(c=>c.e)).size,all.length));
