@@ -1,1 +1,1 @@
-{"name":"who-dat","version":"0.2.0","private":true,"type":"module","scripts":{"test":"node --test test/*.test.js","start":"python3 -m http.server 8000"}}
+{"name":"who-dat","version":"0.3.0","private":true,"type":"module","scripts":{"test":"node --test test/*.test.js","start":"npx --yes serve ."}}

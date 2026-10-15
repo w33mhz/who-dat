@@ -42,6 +42,7 @@ body.calm .card{animation:none!important;transition:none}
 .ov{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;z-index:5;text-align:center}
 .ov.on{display:flex}.ov p{font-size:1.2rem;font-weight:700}
 .hide{display:none}
+.studio label{display:block;font-size:.85rem}#st{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 10px}input[type=text]{font:inherit;padding:6px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%;max-width:420px}#sl{padding-left:18px}#sl li{margin:4px 0}
 </style></head>
 <body><div class="wrap">
 <h1>🕵️ Who Dat?</h1>
@@ -51,7 +52,18 @@ body.calm .card{animation:none!important;transition:none}
   <label>Opponent <select id="mode"><option value="cpu">Computer</option><option value="2p">Second player (pass the device)</option></select></label>
   <label id="dl">Computer <select id="diff"><option value="easy">Beginner</option><option value="hard">Clever</option></select></label></div>
   <div class="row"><label><input type="checkbox" id="auto"> Auto-eliminate</label><label><input type="checkbox" id="calm"> Calm motion</label><label><input type="checkbox" id="speak"> Read answers aloud</label></div></div>
- <button class="act" id="start">Start game</button>
+ <div class="row"><button class="act" id="start">Start game</button><button class="act alt" id="goStudio">🎨 Character Studio</button></div>
+</section>
+<section id="studio" class="hide studio">
+ <div class="panel"><h2>Character Studio — “Our People”</h2>
+ <p style="font-size:.85rem;margin:0">Make your own characters. You choose every trait; the game never guesses from photos. Photos stay in this browser, and exported files include them, so share those only with people you trust.</p></div>
+ <div class="panel"><h2>1. Look</h2><label>Name <input type="text" id="sn" maxlength="60"></label>
+  <div class="row"><div id="sprev" aria-live="polite"></div><label>Avatar <select id="se"></select></label><label>or photo <input type="file" id="sp" accept="image/*"></label></div></div>
+ <div class="panel"><h2>2. Traits (tick what is true)</h2><div id="st"></div>
+  <div class="row"><input type="text" id="sq" placeholder="Add your own question, e.g. Does your character love pizza?" maxlength="60"><button class="act alt" id="sqadd">Add trait</button></div></div>
+ <div class="row"><button class="act" id="ssave">Save character</button><button class="act alt" id="sx">Export</button><label class="act alt" style="cursor:pointer">Import<input type="file" id="si" accept="application/json" class="hide"></label><button class="act alt" id="sback">Back to setup</button></div>
+ <div class="err" id="sv" role="status"></div>
+ <div class="panel"><h2>Your characters</h2><ul id="sl"></ul><p style="font-size:.8rem;margin:0">Needs 4 or more characters with different traits to be playable. Select “Our People” on the setup screen.</p></div>
 </section>
 <section id="game" class="hide">
  <div class="row" style="margin:0 0 6px"><b id="who"></b><span id="secret" class="panel" style="margin:0;padding:4px 10px"></span></div>
@@ -66,28 +78,36 @@ body.calm .card{animation:none!important;transition:none}
 <div class="ov" id="end" role="dialog" aria-modal="true"><div><p id="endMsg"></p><button class="act" id="again">Play again</button></div></div>
 <script type="module">
 import {PACKS,Q,R} from "./src/data.js";
+import {sanitizeCollection} from "./src/collections.js";
 import {has,questionsFor,rank,filter,resolve,reactionEvents,validatePack} from "./src/engine.js";
 const $=s=>document.querySelector(s),rnd=n=>Math.floor(Math.random()*n);
 let cfg={packs:["funny","fantasy","animals","food"],mode:"cpu",diff:"easy",auto:true,calm:false,speak:false};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem("whodat-cfg")||"{}"))}catch{}
 const save=()=>{try{localStorage.setItem("whodat-cfg",JSON.stringify(cfg))}catch{}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+let people=sanitizeCollection((()=>{try{return JSON.parse(localStorage.getItem("whodat-people"))}catch{return{}}})());
+const savePeople=()=>{try{localStorage.setItem("whodat-people",JSON.stringify(people))}catch{$("#sv").textContent="Browser storage is full. Remove a photo or export your collection."}};
+let QA={...Q,...people.q};const refreshQ=()=>{QA={...Q,...people.q}};
+const allPacks=()=>[...PACKS,...(people.chars.length?[{id:"people",name:"Our People",emoji:"👨‍👩‍👧",chars:people.chars}]:[])];
+const portrait=(c,s=56)=>c.img?`<img src="${esc(c.img)}" alt="" width="${s}" height="${s}" style="border-radius:50%;object-fit:cover">`:`<b>${esc(c.e)}</b>`;
 const say=t=>{if(cfg.speak&&window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t))}};
-const label=k=>Q[k].replace("Does your character ","").replace("Is your character ","Is ").replace("?","")+"?";
-const chars=()=>PACKS.filter(p=>cfg.packs.includes(p.id)).flatMap(p=>p.chars);
+const label=k=>QA[k].replace("Does your character ","").replace("Is your character ","Is ").replace("?","")+"?";
+const chars=()=>allPacks().filter(p=>cfg.packs.includes(p.id)).flatMap(p=>p.chars);
 // ---- setup ----
-$("#packs").innerHTML=PACKS.map(p=>`<label><input type="checkbox" value="${p.id}"> <span>${p.emoji} ${p.name} (${p.chars.length})</span></label>`).join("");
+const renderPacks=()=>{$("#packs").innerHTML=allPacks().map(p=>`<label><input type="checkbox" value="${p.id}"> <span>${p.emoji} ${esc(p.name)} (${p.chars.length})</span></label>`).join("")};renderPacks();
 function syncSetup(){
  document.querySelectorAll("#packs input").forEach(i=>i.checked=cfg.packs.includes(i.value));
  $("#mode").value=cfg.mode;$("#diff").value=cfg.diff;$("#auto").checked=cfg.auto;$("#calm").checked=cfg.calm;$("#speak").checked=cfg.speak;
  $("#dl").classList.toggle("hide",cfg.mode!=="cpu");document.body.classList.toggle("calm",cfg.calm);
- const c=chars(),iss=validatePack(c,questionsFor(c,Q));$("#err").textContent=iss.join(" ");$("#start").disabled=!!iss.length;}
+ const c=chars(),iss=validatePack(c,questionsFor(c,QA));$("#err").textContent=iss.join(" ");$("#start").disabled=!!iss.length;}
 $("#packs").onchange=()=>{cfg.packs=[...document.querySelectorAll("#packs input:checked")].map(i=>i.value);save();syncSetup()};
 for(const [id,key] of [["mode","mode"],["diff","diff"]])$("#"+id).onchange=e=>{cfg[key]=e.target.value;save();syncSetup()};
 for(const k of ["auto","calm","speak"])$("#"+k).onchange=e=>{cfg[k]=e.target.checked;save();syncSetup()};
 // ---- game ----
 let S,C,keys;
 function start(){
- C=chars();keys=questionsFor(C,Q);const all=C.map((_,i)=>i),a=rnd(C.length);let b;do b=rnd(C.length);while(b===a&&C.length>1);
+ C=chars();keys=questionsFor(C,QA);const all=C.map((_,i)=>i),a=rnd(C.length);let b;do b=rnd(C.length);while(b===a&&C.length>1);
  const mk=(name,secret,cpu)=>({name,secret,cpu,cand:[...all],out:new Set(),asked:[],log:[]});
  S={p:[mk("Player 1",a,false),mk(cfg.mode==="cpu"?"Computer":"Player 2",b,cfg.mode==="cpu")],turn:0,view:0,busy:false,guess:false,over:false,hl:null};
  $("#setup").classList.add("hide");$("#game").classList.remove("hide");$("#end").classList.remove("on");$("#ans").textContent="";$("#hint").textContent="";
@@ -97,19 +117,19 @@ function handoff(){S.view=S.turn;$("#passMsg").textContent=`Pass the device to $
 $("#ready").onclick=()=>$("#pass").classList.remove("on");
 function render(){
  const v=S.p[S.view],mine=!S.busy&&!S.over&&!v.cpu&&S.turn===S.view;
- $("#who").textContent=cfg.mode==="2p"?v.name:"You";$("#secret").innerHTML=`Your secret: <b>${C[v.secret].e}</b> ${C[v.secret].n}`;
+ $("#who").textContent=cfg.mode==="2p"?v.name:"You";$("#secret").innerHTML=`Your secret: ${portrait(C[v.secret],28)} ${esc(C[v.secret].n)}`;
  $("#board").className=S.guess?"g":"";
- $("#board").innerHTML=C.map((c,i)=>`<button class="card${v.out.has(i)?" out":""}" data-i="${i}" aria-label="${c.n}${v.out.has(i)?", eliminated":""}"><b>${c.e}</b><span>${c.n}</span><i class="badge"></i></button>`).join("");
- $("#qs").innerHTML=keys.map(k=>`<button class="q${S.hl===k?" hl":""}" data-k="${k}" ${!mine||v.asked.includes(k)?"disabled":""}>${label(k)}</button>`).join("");
+ $("#board").innerHTML=C.map((c,i)=>`<button class="card${v.out.has(i)?" out":""}" data-i="${i}" aria-label="${esc(c.n)}${v.out.has(i)?", eliminated":""}">${portrait(c)}<span>${esc(c.n)}</span><i class="badge"></i></button>`).join("");
+ $("#qs").innerHTML=keys.map(k=>`<button class="q${S.hl===k?" hl":""}" data-k="${k}" ${!mine||v.asked.includes(k)?"disabled":""}>${esc(label(k))}</button>`).join("");
  $("#hintBtn").disabled=!mine;$("#guessBtn").disabled=!mine;$("#guessBtn").textContent=S.guess?"Cancel guess":"I know who!";
  $("#log").innerHTML=v.log.map(l=>`<li>${l}</li>`).join("");
  $("#status").textContent=S.over?"Game over":S.guess?"Tap the character you think is your opponent's secret.":mine?`Your turn — about ${v.cand.length} possible. Ask a question or tap cards to cross them out.`:"Computer is thinking…";
 }
 function ask(k){
  const me=S.p[S.turn],opp=S.p[1-S.turn];if(S.busy||S.over||me.asked.includes(k))return;
- const a=resolve(C[opp.secret],k);me.asked.push(k);me.cand=filter(C,me.cand,k,a);me.log.unshift(`${label(k)} → <b>${a?"Yes":"No"}</b>`);S.hl=null;S.busy=true;
- const el=$("#ans");el.className=a?"y":"n";el.textContent=(a?"Yes! ":"No! ")+label(k);say((a?"Yes. ":"No. ")+Q[k]);render();
- for(const e of reactionEvents(C,k)){const c=$("#board").children[e.i];c.classList.add(e.match?"yes":"no");c.querySelector(".badge").textContent=e.match?R[k]:"🤷"}
+ const a=resolve(C[opp.secret],k);me.asked.push(k);me.cand=filter(C,me.cand,k,a);me.log.unshift(`${esc(label(k))} → <b>${a?"Yes":"No"}</b>`);S.hl=null;S.busy=true;
+ const el=$("#ans");el.className=a?"y":"n";el.textContent=(a?"Yes! ":"No! ")+label(k);say((a?"Yes. ":"No. ")+QA[k]);render();
+ for(const e of reactionEvents(C,k)){const c=$("#board").children[e.i];c.classList.add(e.match?"yes":"no");c.querySelector(".badge").textContent=e.match?(R[k]||"🎉"):"🤷"}
  $("#hint").textContent="";
  setTimeout(()=>{if(cfg.auto&&me.cand.length)me.out=new Set(C.map((_,i)=>i).filter(i=>!me.cand.includes(i)));S.busy=false;S.turn=1-S.turn;
   if(cfg.mode==="2p")handoff();else{S.busy=true;render();setTimeout(cpu,500)}},1300);
@@ -119,8 +139,8 @@ function cpu(){
  const o=rank(C,me.cand,me.asked,keys);
  if(me.cand.length<=1||!o.length)return end(1,`The computer guessed ${C[opp.secret].e} ${C[opp.secret].n} — your character. Computer wins!`);
  const k=cfg.diff==="hard"?o[0].k:o[rnd(o.length)].k,a=resolve(C[opp.secret],k);
- me.asked.push(k);me.cand=filter(C,me.cand,k,a);opp.log.unshift(`🤖 ${label(k)} → <b>${a?"Yes":"No"}</b>`);
- $("#ans").className=a?"y":"n";$("#ans").textContent=`🤖 asks: ${label(k)} Answer: ${a?"Yes":"No"}`;say(`The computer asks: ${Q[k]} ${a?"Yes":"No"}`);
+ me.asked.push(k);me.cand=filter(C,me.cand,k,a);opp.log.unshift(`🤖 ${esc(label(k))} → <b>${a?"Yes":"No"}</b>`);
+ $("#ans").className=a?"y":"n";$("#ans").textContent=`🤖 asks: ${label(k)} Answer: ${a?"Yes":"No"}`;say(`The computer asks: ${QA[k]} ${a?"Yes":"No"}`);
  S.busy=false;S.turn=0;render();
 }
 function end(w,msg){S.over=true;$("#endMsg").textContent=(S.p[w].cpu?"😬 ":"🎉 ")+msg;$("#end").classList.add("on");render();say(msg);$("#again").focus()}
@@ -130,9 +150,38 @@ $("#board").onclick=e=>{const c=e.target.closest(".card");if(!c||S.over||S.busy)
 $("#qs").onclick=e=>{const b=e.target.closest("[data-k]");if(b)ask(b.dataset.k)};
 $("#hintBtn").onclick=()=>{const v=S.p[S.view];if(v.cand.length===1){$("#hint").textContent="Only one character fits every answer so far — make your guess!";return}
  const b=rank(C,v.cand,v.asked,keys)[0];if(!b){$("#hint").textContent="No question splits the rest. Time to guess!";return}
- S.hl=b.k;render();$("#hint").textContent=`Try “${Q[b.k]}” — ${b.n} of ${v.cand.length} remaining would say Yes, so it should rule out about ${Math.round(Math.min(b.n,v.cand.length-b.n)/v.cand.length*100)}% or more of them.`};
+ S.hl=b.k;render();$("#hint").textContent=`Try “${QA[b.k]}” — ${b.n} of ${v.cand.length} remaining would say Yes, so it should rule out about ${Math.round(Math.min(b.n,v.cand.length-b.n)/v.cand.length*100)}% or more of them.`};
 $("#guessBtn").onclick=()=>{S.guess=!S.guess;render()};
 $("#start").onclick=start;$("#again").onclick=start;
 $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.remove("hide");$("#pass").classList.remove("on");syncSetup()};
+// ---- Character Studio ----
+const AV=["🙂","😀","🤓","😎","🥳","🤠","👧","👦","👩","👨","🧓","👶","🐶","🐱","🐰","🦸"];
+let D={id:"",img:"",t:new Set()};
+const ticked=()=>new Set([...document.querySelectorAll("#st input:checked")].map(i=>i.value));
+function studioRender(){
+ $("#sprev").innerHTML=D.img?`<img src="${esc(D.img)}" alt="Photo preview" width="64" height="64" style="border-radius:50%;object-fit:cover">`:`<b style="font-size:2.4rem">${$("#se").value}</b>`;
+ $("#st").innerHTML=Object.keys(QA).map(k=>`<label><input type="checkbox" value="${esc(k)}" ${D.t.has(k)?"checked":""}> ${esc(label(k))}</label>`).join("");
+ $("#sl").innerHTML=people.chars.map((c,i)=>`<li>${portrait(c,28)} ${esc(c.n)} <button class="act alt" data-ed="${i}">Edit</button> <button class="act alt" data-del="${i}">Delete</button></li>`).join("")||"<li>No characters yet.</li>";
+ const iss=people.chars.length?validatePack(people.chars,questionsFor(people.chars,QA)):[];$("#sv").textContent=iss.join(" ");
+}
+function draftReset(){D={id:"",img:"",t:new Set()};$("#sn").value="";$("#se").value=AV[0];$("#sp").value="";studioRender()}
+const afterChange=()=>{savePeople();refreshQ();renderPacks();syncSetup();studioRender()};
+$("#se").innerHTML=AV.map(a=>`<option>${a}</option>`).join("");$("#se").onchange=()=>{D.img="";studioRender()};
+$("#sp").onchange=e=>{const f=e.target.files[0];if(!f||!f.type.startsWith("image/"))return;const u=URL.createObjectURL(f),im=new Image();
+ im.onload=()=>{const c=document.createElement("canvas");c.width=c.height=160;const z=Math.min(im.width,im.height);c.getContext("2d").drawImage(im,(im.width-z)/2,(im.height-z)/2,z,z,0,0,160,160);D.img=c.toDataURL("image/jpeg",.8);URL.revokeObjectURL(u);D.t=ticked();studioRender()};im.src=u};
+$("#sqadd").onclick=()=>{const q=$("#sq").value.trim();if(q.length<8||!q.endsWith("?")){$("#sv").textContent="Write a full yes/no question ending in “?”.";return}
+ const k="c-"+(slug(q).slice(0,24)||Date.now().toString(36));D=Object.assign(D,{t:ticked()});D.t.add(k);people.q[k]=q.slice(0,60);$("#sq").value="";savePeople();refreshQ();studioRender()};
+$("#ssave").onclick=()=>{const n=$("#sn").value.trim();if(!n){$("#sv").textContent="Give your character a name.";return}
+ const c={id:D.id||"people-"+(slug(n)||Date.now().toString(36)),pack:"people",n:n.slice(0,60),e:$("#se").value,img:D.img,t:[...ticked()]};
+ const i=people.chars.findIndex(x=>x.id===c.id);i>=0?people.chars[i]=c:people.chars.push(c);draftReset();afterChange()};
+$("#sl").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.del!==undefined){people.chars.splice(+b.dataset.del,1);afterChange()}
+ else if(b.dataset.ed!==undefined){const c=people.chars[+b.dataset.ed];D={id:c.id,img:c.img,t:new Set(c.t)};studioRender();$("#sn").value=c.n;$("#se").value=c.e;$("#sn").focus()}};
+$("#sx").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(people,null,1)],{type:"application/json"}));a.download="whodat-our-people.json";a.click()};
+$("#si").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ try{const o=sanitizeCollection(JSON.parse(await f.text())),m=new Map(people.chars.map(c=>[c.id,c]));o.chars.forEach(c=>m.set(c.id,c));people={...people,q:{...people.q,...o.q},chars:[...m.values()]};afterChange()}
+ catch{$("#sv").textContent="That file isn't a valid collection."}e.target.value=""};
+$("#goStudio").onclick=()=>{$("#setup").classList.add("hide");$("#studio").classList.remove("hide");studioRender()};
+$("#sback").onclick=()=>{$("#studio").classList.add("hide");$("#setup").classList.remove("hide");syncSetup()};
 syncSetup();
 </script></body></html>

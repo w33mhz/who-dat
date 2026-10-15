@@ -19,6 +19,7 @@ npm test           # rules tests (Node 20+)
 - Play the computer (Beginner or Clever) or a second player on one device (pass-and-play with a privacy screen)
 - Reaction animations on every question, for Yes and No
 - Smart hints that suggest the best-splitting question without revealing the secret
+- **Character Studio:** make your own "Our People" characters (avatar or photo, your own traits and custom yes/no questions), then mix them into any board; import/export collections as JSON
 - Auto-eliminate, calm-motion mode, optional spoken answers, keyboard and screen-reader labels
 
 ## Project layout
@@ -27,6 +28,7 @@ npm test           # rules tests (Node 20+)
 index.html        UI (setup screen, board, pass-and-play)
 src/data.js       packs, characters, questions, reactions
 src/engine.js     pure rules: resolve, filter, rank, validate (no DOM)
+src/collections.js  sanitizes custom/imported collections
 test/             node:test rule tests
 docs/DESIGN.md    game design specification
 docs/ROADMAP.md   milestones and status
