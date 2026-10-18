@@ -112,7 +112,7 @@ for(const k of ["auto","calm","speak"])$("#"+k).onchange=e=>{cfg[k]=e.target.che
 // ---- game ----
 let S,C,keys;
 function start(){
- if(cfg.mode==="online"){ $("#setup").classList.add("hide");$("#onlineLobby").classList.remove("hide");$("#onlineLobbyStatus").textContent="";$("#onlineGame").classList.add("hide");return; }
+ if(cfg.mode==="online"){ $("#setup").classList.add("hide");$("#onlineLobby").classList.remove("hide");$("#onlineLobby").classList.add("on");$("#onlineLobbyStatus").textContent="";$("#onlineGame").classList.add("hide");return; }
  C=chars();keys=questionsFor(C,QA);const all=C.map((_,i)=>i),a=rnd(C.length);let b;do b=rnd(C.length);while(b===a&&C.length>1);
  const mk=(name,secret,cpu)=>({name,secret,cpu,cand:[...all],out:new Set(),asked:[],log:[]});
  S={p:[mk("Player 1",a,false),mk(cfg.mode==="cpu"?"Computer":"Player 2",b,cfg.mode==="cpu")],turn:0,view:0,busy:false,guess:false,over:false,hl:null};
@@ -195,8 +195,8 @@ $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.r
  }
  async function onlineAction(fn,...args){try{const r=await fn(OP.roomCode,OP.playerToken,...args);OG=r.game;if(r.answer!==undefined)$("#onlineAnswer").textContent=r.answer?"Yes!":"No.";if(r.correct!==undefined){$("#onlineAnswer").textContent=r.correct?"Correct guess! You win.":"Incorrect. The answer was "+(OG.characters[r.answerIndex]?.n||"unknown")+".";onlineGuessMode=false;}onlineRender();}catch(e){$("#onlineStatus").textContent=e.message||"Action failed.";}}
  $("#createRoom").onclick=()=>onlineStart("create");$("#joinRoom").onclick=()=>onlineStart("join");
- $("#onlineBack").onclick=()=>{$("#onlineLobby").classList.add("hide");$("#setup").classList.remove("hide");cfg.mode="cpu";syncSetup()};
- $("#onlineExit").onclick=()=>{if(onlinePoll)clearInterval(onlinePoll);onlinePoll=null;OC=OG=OP=null;onlineGuessMode=false;try{sessionStorage.removeItem("whodat-online")}catch{}$("#onlineGame").classList.add("hide");$("#setup").classList.remove("hide");cfg.mode="cpu";syncSetup()};
+ $("#onlineBack").onclick=()=>{$("#onlineLobby").classList.add("hide");$("#onlineLobby").classList.remove("on");$("#setup").classList.remove("hide");cfg.mode="cpu";syncSetup()};
+ $("#onlineExit").onclick=()=>{if(onlinePoll)clearInterval(onlinePoll);onlinePoll=null;OC=OG=OP=null;onlineGuessMode=false;try{sessionStorage.removeItem("whodat-online")}catch{}$("#onlineGame").classList.add("hide");$("#onlineLobby").classList.remove("on");$("#setup").classList.remove("hide");cfg.mode="cpu";syncSetup()};
  $("#onlineGuess").onclick=()=>{onlineGuessMode=!onlineGuessMode;onlineRender()};
  $("#onlineBoard").onclick=e=>{const b=e.target.closest("[data-oi]");if(!b||!OG||OG.status!=="active")return;const i=Number(b.dataset.oi);if(onlineGuessMode){if(OG.turn!==OG.player)return;onlineAction(OC.guess,i);return;}onlineAction(OC.eliminate,i)};
  $("#onlineQuestions").onclick=e=>{const b=e.target.closest("[data-ok]");if(b&&OC&&OG&&OG.turn===OG.player)onlineAction(OC.ask,b.dataset.ok)};
