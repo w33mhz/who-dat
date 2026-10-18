@@ -15,6 +15,15 @@ Status against [DESIGN.md](DESIGN.md). Checked items work in `index.html` today.
 ## 2. Multiplayer
 - [x] Local pass-and-play with privacy screen
 - [ ] Online rooms, room codes, server-authoritative answers, reconnection
+  - [x] Supabase schema foundation with direct client table access denied
+  - [x] Edge Function foundation for create/join/state/ask/eliminate/guess actions
+  - [x] Browser API helper for the Edge Function
+  - [ ] Integrate online lobby and remote game state into `index.html`
+  - [ ] Add polling/realtime synchronization and reconnect handling
+  - [ ] Add automated tests for authorization, turn validation, and secret isolation
+  - [ ] Configure a Supabase project and deploy; verify with two separate browsers
+
+**Important:** Online multiplayer is not yet available in the live game. The branch contains backend foundations, not a completed/deployed online mode. See [Supabase setup notes](../supabase/README.md).
 
 ## 3. Character Studio and collections
 - [x] Character editor with explicit traits and custom yes/no questions
