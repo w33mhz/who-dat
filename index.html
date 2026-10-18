@@ -184,6 +184,7 @@ $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.r
  function onlineRender(){
    if(!OG)return;
    const chars=OG.characters||[],mine=OG.turn===OG.player&&OG.status==="active",waiting=OG.status==="waiting";
+   keys=Object.keys(QA).filter(k=>chars.some(c=>Array.isArray(c.t)&&c.t.includes(k)));
    $("#onlineRoomCode").textContent=OG.roomCode||OP.roomCode;
    $("#onlineStatus").textContent=waiting?"Waiting for the other player to join. Share the room code above.":OG.status==="finished"?(OG.winner===OG.player?"You won!":"You lost this round."):(mine?"Your turn. Ask a yes/no question or make a final guess.":"Waiting for your opponent’s turn…");
    $("#onlineBoard").innerHTML=chars.map((c,i)=>{const out=(OG.yourState?.eliminated||[]).includes(i);return '<button class="online-card'+(out?' out':'')+(onlineGuessMode?' selected':'')+'" data-oi="'+i+'">'+portrait(c,64)+'<span>'+esc(c.n)+'</span></button>'}).join("");
