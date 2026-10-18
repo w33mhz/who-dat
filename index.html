@@ -24,15 +24,17 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .err{color:var(--bad);font-size:.85rem;min-height:1.2em}
 .main{display:grid;gap:14px;grid-template-columns:1fr}
 @media(min-width:840px){.main{grid-template-columns:1fr 320px}}
-#board{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
-.card{position:relative;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;color:var(--fg);font:inherit;cursor:pointer;transition:transform .35s,opacity .35s}
-.card b{font-size:2.3rem;line-height:1.1}.card span{font-size:.72rem;font-weight:600;text-align:center}
+#board{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:9px}
+.card{position:relative;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:8px 5px 9px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--fg);font:inherit;cursor:pointer;transition:transform .25s,opacity .25s,box-shadow .25s;box-shadow:0 2px 5px #33234512}
+.card:hover{transform:translateY(-2px);box-shadow:0 5px 12px #33234520}.card span{font-size:.72rem;font-weight:700;text-align:center;line-height:1.2}
+.portrait{display:block;flex:none;border-radius:18%;overflow:hidden;background:var(--bg);box-shadow:0 2px 8px #24163a20}
+.portrait img{display:block;border-radius:18%;object-fit:cover}
 .card.out{opacity:.38;filter:grayscale(1);transform:scaleY(.88) translateY(6px);border-style:dashed}
 .card.out::after{content:"OUT";position:absolute;top:3px;left:5px;font-size:.6rem;font-weight:800;color:var(--bad)}
 #board.g .card:not(.out){border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
-.badge{position:absolute;top:-6px;right:-4px;font-style:normal;font-size:1.2rem}
-.card.yes{animation:hop .6s ease 2;border-color:var(--ok)}.card.no{animation:nope .5s;border-color:var(--bad)}
-@keyframes hop{50%{transform:translateY(-10px) rotate(-6deg)}}@keyframes nope{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.badge{position:absolute;top:-6px;right:-4px;font-style:normal;font-size:1.05rem;background:var(--card);border-radius:50%;line-height:1;padding:2px}
+.card.yes{animation:hop .48s ease 1;border-color:var(--ok);box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 22%,transparent)}
+@keyframes hop{50%{transform:translateY(-5px) rotate(-3deg)}}
 body.calm .card{animation:none!important;transition:none}
 @media(prefers-reduced-motion:reduce){.card{animation:none!important;transition:none}}
 #qs{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:320px;overflow:auto}
@@ -90,7 +92,7 @@ let people=sanitizeCollection((()=>{try{return JSON.parse(localStorage.getItem("
 const savePeople=()=>{try{localStorage.setItem("whodat-people",JSON.stringify(people))}catch{$("#sv").textContent="Browser storage is full. Remove a photo or export your collection."}};
 let QA={...Q,...people.q};const refreshQ=()=>{QA={...Q,...people.q}};
 const allPacks=()=>[...PACKS,...(people.chars.length?[{id:"people",name:"Our People",emoji:"👨‍👩‍👧",chars:people.chars}]:[])];
-const portrait=(c,s=56)=>c.img?`<img src="${esc(c.img)}" alt="" width="${s}" height="${s}" style="border-radius:50%;object-fit:cover">`:`<b>${esc(c.e)}</b>`;
+const portrait=(c,s=56)=>c.img||c.art?`<span class="portrait" style="width:${s}px;height:${s}px"><img src="${esc(c.img||c.art)}" alt="" width="${s}" height="${s}"></span>`:`<svg class="portrait" width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="${esc(c.n)} portrait"><defs><linearGradient id="g-${esc(c.id)}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${({funny:'#ffd9a8',fantasy:'#c9b8ff',animals:'#b8e6c9',food:'#ffc7ae',seasonal:'#b8def5',people:'#f5c3da'}[c.pack]||'#d8cffb')}"/><stop offset="1" stop-color="${({funny:'#f5a96d',fantasy:'#8c74dc',animals:'#68b98b',food:'#ef896d',seasonal:'#729dd4',people:'#d579aa'}[c.pack]||'#9181df')}"/></linearGradient></defs><circle cx="32" cy="32" r="31" fill="url(#g-${esc(c.id)})"/><circle cx="32" cy="32" r="26" fill="none" stroke="#fff" stroke-opacity=".68" stroke-width="1.5"/><circle cx="12" cy="15" r="2" fill="#fff" fill-opacity=".8"/><circle cx="51" cy="47" r="1.6" fill="#fff" fill-opacity=".8"/><text x="32" y="40" text-anchor="middle" font-size="34" font-family="system-ui,'Apple Color Emoji','Segoe UI Emoji',sans-serif">${esc(c.e)}</text></svg>`;
 const say=t=>{if(cfg.speak&&window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t))}};
 const label=k=>QA[k].replace("Does your character ","").replace("Is your character ","Is ").replace("?","")+"?";
 const chars=()=>allPacks().filter(p=>cfg.packs.includes(p.id)).flatMap(p=>p.chars);
@@ -129,7 +131,7 @@ function ask(k){
  const me=S.p[S.turn],opp=S.p[1-S.turn];if(S.busy||S.over||me.asked.includes(k))return;
  const a=resolve(C[opp.secret],k);me.asked.push(k);me.cand=filter(C,me.cand,k,a);me.log.unshift(`${esc(label(k))} → <b>${a?"Yes":"No"}</b>`);S.hl=null;S.busy=true;
  const el=$("#ans");el.className=a?"y":"n";el.textContent=(a?"Yes! ":"No! ")+label(k);say((a?"Yes. ":"No. ")+QA[k]);render();
- for(const e of reactionEvents(C,k)){const c=$("#board").children[e.i];c.classList.add(e.match?"yes":"no");c.querySelector(".badge").textContent=e.match?(R[k]||"🎉"):"🤷"}
+ for(const e of reactionEvents(C,k,me.out)){if(!e.match)continue;const c=$("#board").children[e.i];c.classList.add("yes");c.querySelector(".badge").textContent=R[k]||"🎉"}
  $("#hint").textContent="";
  setTimeout(()=>{if(cfg.auto&&me.cand.length)me.out=new Set(C.map((_,i)=>i).filter(i=>!me.cand.includes(i)));S.busy=false;S.turn=1-S.turn;
   if(cfg.mode==="2p")handoff();else{S.busy=true;render();setTimeout(cpu,500)}},1300);

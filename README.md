@@ -17,7 +17,8 @@ npm test           # rules tests (Node 20+)
 
 - 5 mixable packs (60 characters, 12 each): Funny Faces, Fantasy & Creatures, Animals & Pets, Food Fight, Seasonal Specials
 - Play the computer (Beginner or Clever) or a second player on one device (pass-and-play with a privacy screen)
-- Reaction animations on every question, for Yes and No
+- Subtle reactions only from characters that match the asked-about trait
+- 60 realistic storybook portraits across the built-in packs; custom photos stay photos
 - Smart hints that suggest the best-splitting question without revealing the secret
 - **Character Studio:** make your own "Our People" characters (avatar or photo, your own traits and custom yes/no questions), then mix them into any board; import/export collections as JSON
 - Auto-eliminate, calm-motion mode, optional spoken answers, keyboard and screen-reader labels

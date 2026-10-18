@@ -1,4 +1,4 @@
-import test from "node:test";import assert from "node:assert/strict";
+import test from "node:test";import assert from "node:assert/strict";import {existsSync} from "node:fs";
 import {PACKS,Q} from "../src/data.js";
 import {has,questionsFor,rank,filter,validatePack,resolve,reactionEvents} from "../src/engine.js";
 const all=PACKS.flatMap(p=>p.chars),ids=all.map((_,i)=>i),keys=questionsFor(all,Q);
@@ -8,6 +8,8 @@ test("filter keeps only matching answers",()=>{const f=filter(all,ids,"wings",tr
 test("rank never offers a non-splitting or asked question",()=>{const r=rank(all,ids,["wings"],keys);assert.ok(r.every(o=>o.k!=="wings"&&o.n>0&&o.n<ids.length))});
 test("greedy questions always solve any secret",()=>{for(let s=0;s<all.length;s++){let c=ids,asked=[];while(c.length>1){const o=rank(all,c,asked,keys);assert.ok(o.length,"stuck");asked.push(o[0].k);c=filter(all,c,o[0].k,resolve(all[s],o[0].k))}assert.equal(c[0],s)}});
 test("reactions match trait truth",()=>assert.ok(reactionEvents(all,"hat").every(e=>e.match===has(all[e.i],"hat"))));
+test("eliminated characters are omitted from reaction events",()=>{const excluded=new Set([0,3]);assert.ok(reactionEvents(all,"hat",excluded).every(e=>!excluded.has(e.i)));assert.equal(reactionEvents(all,"hat",excluded).length,all.length-excluded.size)});
 test("validatePack flags duplicates",()=>assert.ok(validatePack([{n:"a",t:["x"]},{n:"b",t:["x"]},{n:"c",t:[]},{n:"d",t:["y"]}],["x"]).length));
 test("every built-in pack has 12 characters with unique ids",()=>{for(const p of PACKS)assert.equal(p.chars.length,12,p.id);assert.equal(new Set(all.map(c=>c.id)).size,all.length)});
+test("every built-in character has a portrait asset",()=>{for(const c of all){assert.equal(c.art,`./assets/portraits/${c.id}.webp`);assert.ok(existsSync(new URL(`../assets/portraits/${c.id}.webp`,import.meta.url)),c.id)}});
 test("no two built-in characters share an emoji",()=>assert.equal(new Set(all.map(c=>c.e)).size,all.length));

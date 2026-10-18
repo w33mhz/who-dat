@@ -8,7 +8,7 @@ export const rank=(chars,cand,asked,keys)=>keys.filter(k=>!asked.includes(k))
  .map(k=>({k,n:cand.filter(i=>has(chars[i],k)).length})).filter(o=>o.n>0&&o.n<cand.length)
  .sort((a,b)=>Math.abs(a.n-cand.length/2)-Math.abs(b.n-cand.length/2));
 /** Presentation events for an answered question. Never reads the secret. */
-export const reactionEvents=(chars,k)=>chars.map((c,i)=>({i,match:has(c,k)}));
+export const reactionEvents=(chars,k,excluded=new Set())=>chars.flatMap((c,i)=>excluded.has(i)?[]:[{i,match:has(c,k)}]);
 /** Pre-game checks: size, duplicate trait sets (unsolvable), solvability. */
 export function validatePack(chars,keys){
  const issues=[],seen={};

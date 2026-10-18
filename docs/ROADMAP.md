@@ -5,11 +5,11 @@ Status against [DESIGN.md](DESIGN.md). Checked items work in `index.html` today.
 ## 1. Foundation (Core)
 - [x] Responsive board, trait engine, elimination, final guess
 - [x] Computer opponent (Beginner / Clever), smart hints
-- [x] Reaction animations (emoji badges, Yes and No)
+- [x] Restrained trait-match reactions (only characters with the asked-about trait react)
 - [x] Engine split from UI (`src/engine.js`) with tests
 - [x] Five built-in packs, mixable, selection saved in the browser
 - [x] Custom "Our People" category (via the Studio)
-- [ ] Illustrated (SVG) characters instead of emoji
+- [x] Distinct realistic storybook portraits for all 60 built-in characters
 - [ ] Undo accidental elimination, large-board search/filters
 
 ## 2. Multiplayer
