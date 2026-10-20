@@ -25,7 +25,7 @@ jobs:
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           node --input-type=module <<'NODE'
-          import { writeFile } from 'node:fs/promises';
+          import { readFile, writeFile } from 'node:fs/promises';
 
           const projectRef = process.env.SUPABASE_PROJECT_REF;
           const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
@@ -40,8 +40,12 @@ jobs:
           if (!publicKey) throw new Error('Supabase project has no publishable or anon key.');
 
           const publicConfig = { url: `https://${projectRef}.supabase.co`, anonKey: publicKey };
-          await writeFile('supabase-config.js', `window.WHO_DAT_SUPABASE = Object.freeze(${JSON.stringify(publicConfig)});\n`);
-          console.log('Generated browser configuration with the public key only.');
+          const marker = '<!-- SUPABASE_CONFIG -->';
+          const html = await readFile('index.html', 'utf8');
+          if (!html.includes(marker)) throw new Error('Supabase configuration marker is missing from index.html.');
+          const script = `<script>window.WHO_DAT_SUPABASE = Object.freeze(${JSON.stringify(publicConfig)});</script>`;
+          await writeFile('index.html', html.replace(marker, script));
+          console.log('Injected browser configuration into index.html with the public key only.');
           NODE
       - uses: actions/upload-pages-artifact@v3
         with:
