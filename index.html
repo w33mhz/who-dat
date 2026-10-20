@@ -171,7 +171,7 @@ $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.r
    if(!config?.url||!config?.anonKey)throw new Error("Online play is not configured for this site yet. Please try again later.");
    return createOnlineClient({supabaseUrl:config.url,anonKey:config.anonKey});
  }
- function onlineCharacters(){return chars().map(c=>({id:c.id,n:c.n,e:c.e||"",t:Array.isArray(c.t)?c.t:Object.keys(c.t||{}).filter(k=>c.t[k])}));}
+ function onlineCharacters(){return chars().map(c=>({id:c.id,n:c.n,e:c.e||"",...(typeof c.art==="string"?{art:c.art}:{}),t:Array.isArray(c.t)?c.t:Object.keys(c.t||{}).filter(k=>c.t[k])}));}
  function onlineSaveSession(roomCode,playerToken){try{sessionStorage.setItem("whodat-online",JSON.stringify({roomCode,playerToken}))}catch{}}
  function inviteUrl(roomCode){const url=new URL(location.href);url.search="";url.hash="";url.searchParams.set("room",roomCode);return url.toString();}
  function renderInviteQr(roomCode){if(inviteQrRoom===roomCode)return;const qr=qrcode(0,"M");qr.addData(inviteUrl(roomCode));qr.make();$("#inviteQrImage").innerHTML=qr.createSvgTag(5,3);$("#inviteQrImage svg")?.setAttribute("aria-label","QR code to join room "+roomCode);inviteQrRoom=roomCode;}
