@@ -44,11 +44,20 @@ jobs:
           const html = await readFile('index.html', 'utf8');
           if (!html.includes(marker)) throw new Error('Supabase configuration marker is missing from index.html.');
           const script = `<script>window.WHO_DAT_SUPABASE = Object.freeze(${JSON.stringify(publicConfig)});</script>`;
-          await writeFile('index.html', html.replace(marker, script));
+          const configuredHtml = html.replace(marker, script);
+          if (configuredHtml.includes(marker) || !configuredHtml.includes('window.WHO_DAT_SUPABASE = Object.freeze')) {
+            throw new Error('Supabase browser configuration was not injected into index.html.');
+          }
+          await writeFile('index.html', configuredHtml);
           console.log('Injected browser configuration into index.html with the public key only.');
           NODE
+      - name: Name the Pages artifact uniquely
+        run: echo "PAGES_ARTIFACT=github-pages-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_ENV"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+          name: ${{ env.PAGES_ARTIFACT }}
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT }}
