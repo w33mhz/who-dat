@@ -31,7 +31,8 @@ const cleanPack = (raw: unknown) => {
     if (c.id.length > 100 || c.n.length > 80 || c.t.length > 100) throw new Error("Character data is too large.");
     if (seen.has(c.id)) throw new Error("Character IDs must be unique.");
     seen.add(c.id);
-    return { id: c.id, n: c.n, e: typeof c.e === "string" ? c.e.slice(0, 12) : "", t: [...new Set(c.t.filter((x: unknown) => typeof x === "string" && x.length <= 100))] };
+    const art = typeof c.art === "string" && /^\.\/assets\/portraits\/[a-z0-9-]+\.webp$/.test(c.art) ? c.art : undefined;
+    return { id: c.id, n: c.n, e: typeof c.e === "string" ? c.e.slice(0, 12) : "", ...(art ? { art } : {}), t: [...new Set(c.t.filter((x: unknown) => typeof x === "string" && x.length <= 100))] };
   });
 };
 function view(row: any, player: 0 | 1) {
