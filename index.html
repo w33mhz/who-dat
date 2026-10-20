@@ -45,13 +45,15 @@ body.calm .card{animation:none!important;transition:none}
 .ov.on{display:flex}.ov p{font-size:1.2rem;font-weight:700}
 .hide{display:none}
 .studio label{display:block;font-size:.85rem}#st{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 10px}input[type=text]{font:inherit;padding:6px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%;max-width:420px}#sl{padding-left:18px}#sl li{margin:4px 0}
+
+#onlineLobby{display:none}#onlineLobby.on{display:block}.online-grid{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:840px){.online-grid{grid-template-columns:1fr 320px}}#onlineBoard{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}.online-card{position:relative;border:2px solid var(--line);border-radius:14px;padding:6px;background:var(--card);color:var(--fg);font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}.online-card span{font-size:.72rem;font-weight:700;text-align:center;overflow-wrap:anywhere}.online-card.out{opacity:.35;filter:grayscale(1);border-style:dashed}.online-card.selected{outline:3px solid var(--acc)}#onlineQuestions{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:320px;overflow:auto}.online-code{font-size:1.6rem;letter-spacing:.16em;font-weight:900}.online-note{font-size:.88rem;color:var(--mut)}
 </style></head>
 <body><div class="wrap">
 <h1>🕵️ Who Dat?</h1>
 <section id="setup">
  <div class="panel"><h2>1. Choose character packs (mix as many as you like)</h2><div class="packs" id="packs"></div><div class="err" id="err"></div></div>
  <div class="panel"><h2>2. Choose how to play</h2><div class="row">
-  <label>Opponent <select id="mode"><option value="cpu">Computer</option><option value="2p">Second player (pass the device)</option></select></label>
+  <label>Opponent <select id="mode"><option value="cpu">Computer</option><option value="2p">Second player (pass the device)</option><option value="online">Online 2 Player (remote)</option></select></label>
   <label id="dl">Computer <select id="diff"><option value="easy">Beginner</option><option value="hard">Clever</option></select></label></div>
   <div class="row"><label><input type="checkbox" id="auto"> Auto-eliminate</label><label><input type="checkbox" id="calm"> Calm motion</label><label><input type="checkbox" id="speak"> Read answers aloud</label></div></div>
  <div class="row"><button class="act" id="start">Start game</button><button class="act alt" id="goStudio">🎨 Character Studio</button></div>
@@ -67,7 +69,7 @@ body.calm .card{animation:none!important;transition:none}
  <div class="err" id="sv" role="status"></div>
  <div class="panel"><h2>Your characters</h2><ul id="sl"></ul><p style="font-size:.8rem;margin:0">Needs 4 or more characters with different traits to be playable. Select “Our People” on the setup screen.</p></div>
 </section>
-<section id="game" class="hide">
+<section id="onlineLobby" class="hide"><div class="panel"><h2>Online 2 Player</h2><p>Play from separate devices. Create a room and share its code, or join a friend.</p><p class="online-note">Requires a configured Supabase project.</p><label>Supabase project URL <input id="sbUrl" type="text" placeholder="https://your-project.supabase.co"></label><div style="height:8px"></div><label>Supabase anon key <input id="sbKey" type="text" placeholder="Public anon key"></label><div class="row"><button class="act" id="createRoom">Create room</button><label>Room code <input id="joinCode" type="text" maxlength="6" placeholder="ABC123" style="width:120px;text-transform:uppercase"></label><button class="act alt" id="joinRoom">Join room</button><button class="act alt" id="onlineBack">Back</button></div><div id="onlineLobbyStatus" class="err" role="status"></div></div></section><section id="onlineGame" class="hide"><div class="panel"><div class="row" style="justify-content:space-between;margin:0"><div><b>Online room</b> <span id="onlineRoomCode" class="online-code"></span></div><button class="act alt" id="onlineExit">Leave game</button></div><div id="onlineStatus" aria-live="polite"></div><div id="onlineAnswer" aria-live="assertive"></div></div><div class="online-grid"><div class="panel"><h2>Your character board</h2><div id="onlineBoard"></div></div><aside><div class="panel"><h2>Ask a question</h2><div id="onlineQuestions"></div><div class="row"><button class="act" id="onlineGuess">I know who!</button></div><div id="onlineHint" class="online-note"></div></div><div class="panel"><h2>History</h2><ol id="onlineLog"></ol></div></aside></div></section><section id="game" class="hide">
  <div class="row" style="margin:0 0 6px"><b id="who"></b><span id="secret" class="panel" style="margin:0;padding:4px 10px"></span></div>
  <div id="status" aria-live="polite" style="font-weight:600"></div><div id="ans" aria-live="assertive"></div>
  <div class="main"><div id="board" role="group" aria-label="Character board"></div>
@@ -80,6 +82,7 @@ body.calm .card{animation:none!important;transition:none}
 <div class="ov" id="end" role="dialog" aria-modal="true"><div><p id="endMsg"></p><button class="act" id="again">Play again</button></div></div>
 <script type="module">
 import {PACKS,Q,R} from "./src/data.js";
+import {createOnlineClient} from "./src/online.js";
 import {sanitizeCollection} from "./src/collections.js";
 import {has,questionsFor,rank,filter,resolve,reactionEvents,validatePack} from "./src/engine.js";
 const $=s=>document.querySelector(s),rnd=n=>Math.floor(Math.random()*n);
@@ -109,6 +112,7 @@ for(const k of ["auto","calm","speak"])$("#"+k).onchange=e=>{cfg[k]=e.target.che
 // ---- game ----
 let S,C,keys;
 function start(){
+ if(cfg.mode==="online"){ $("#setup").classList.add("hide");$("#onlineLobby").classList.remove("hide");$("#onlineLobby").classList.add("on");$("#onlineLobbyStatus").textContent="";$("#onlineGame").classList.add("hide");return; }
  C=chars();keys=questionsFor(C,QA);const all=C.map((_,i)=>i),a=rnd(C.length);let b;do b=rnd(C.length);while(b===a&&C.length>1);
  const mk=(name,secret,cpu)=>({name,secret,cpu,cand:[...all],out:new Set(),asked:[],log:[]});
  S={p:[mk("Player 1",a,false),mk(cfg.mode==="cpu"?"Computer":"Player 2",b,cfg.mode==="cpu")],turn:0,view:0,busy:false,guess:false,over:false,hl:null};
@@ -156,7 +160,50 @@ $("#hintBtn").onclick=()=>{const v=S.p[S.view];if(v.cand.length===1){$("#hint").
 $("#guessBtn").onclick=()=>{S.guess=!S.guess;render()};
 $("#start").onclick=start;$("#again").onclick=start;
 $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.remove("hide");$("#pass").classList.remove("on");syncSetup()};
-// ---- Character Studio ----
+
+ // ---- Online multiplayer ----
+ let OC=null, OG=null, OP=null, onlinePoll=null, onlineGuessMode=false, onlineLastLog="";
+ const onlineSetStatus=t=>$("#onlineLobbyStatus").textContent=t;
+ function onlineClient(){
+   const url=$("#sbUrl").value.trim(),key=$("#sbKey").value.trim();
+   if(!url||!key)throw new Error("Enter the Supabase project URL and public anon key. Never use the service-role key in the browser.");
+   return createOnlineClient({supabaseUrl:url,anonKey:key});
+ }
+ function onlineCharacters(){return chars().map(c=>({id:c.id,n:c.n,e:c.e||"",t:Array.isArray(c.t)?c.t:Object.keys(c.t||{}).filter(k=>c.t[k])}));}
+ function onlineSaveSession(roomCode,playerToken){try{sessionStorage.setItem("whodat-online",JSON.stringify({roomCode,playerToken,url:$("#sbUrl").value.trim(),key:$("#sbKey").value.trim()}))}catch{}}
+ async function onlineStart(action){
+   try{
+     OC=onlineClient();onlineSetStatus(action==="create"?"Creating room…":"Joining room…");
+     const result=action==="create"?await OC.createRoom(onlineCharacters()):await OC.joinRoom($("#joinCode").value.trim().toUpperCase());
+     OG=result.game;OP={roomCode:result.roomCode,playerToken:result.playerToken};onlineSaveSession(OP.roomCode,OP.playerToken);
+     $("#onlineLobby").classList.add("hide");$("#onlineGame").classList.remove("hide");$("#onlineRoomCode").textContent=OP.roomCode;onlineGuessMode=false;$("#onlineAnswer").textContent="";
+     await onlineRefresh();if(onlinePoll)clearInterval(onlinePoll);onlinePoll=setInterval(()=>onlineRefresh().catch(e=>$("#onlineStatus").textContent=e.message),1800);
+   }catch(e){onlineSetStatus(e.message||"Could not connect to the online game.");}
+ }
+ async function onlineRefresh(){if(!OC||!OP)return;const r=await OC.getState(OP.roomCode,OP.playerToken);OG=r.game;onlineRender();}
+ function onlineRender(){
+   if(!OG)return;
+   const chars=OG.characters||[],mine=OG.turn===OG.player&&OG.status==="active",waiting=OG.status==="waiting";
+   keys=Object.keys(QA).filter(k=>chars.some(c=>Array.isArray(c.t)&&c.t.includes(k)));
+   $("#onlineRoomCode").textContent=OG.roomCode||OP.roomCode;
+   $("#onlineStatus").textContent=waiting?"Waiting for the other player to join. Share the room code above.":OG.status==="finished"?(OG.winner===OG.player?"You won!":"You lost this round."):(mine?"Your turn. Ask a yes/no question or make a final guess.":"Waiting for your opponent’s turn…");
+   $("#onlineBoard").innerHTML=chars.map((c,i)=>{const out=(OG.yourState?.eliminated||[]).includes(i);return '<button class="online-card'+(out?' out':'')+(onlineGuessMode?' selected':'')+'" data-oi="'+i+'">'+portrait(c,64)+'<span>'+esc(c.n)+'</span></button>'}).join("");
+   $("#onlineQuestions").innerHTML=keys.map(k=>'<button class="q" data-ok="'+esc(k)+'" '+(mine&&!(OG.yourState?.asked||[]).includes(k)?'':'disabled')+'>'+esc(label(k))+'</button>').join("");
+   $("#onlineGuess").disabled=!mine||waiting;$("#onlineGuess").textContent=onlineGuessMode?"Tap a character to guess":"I know who!";
+   $("#onlineHint").textContent=onlineGuessMode?"Select the character you think your opponent chose.":"Your secret character is private; your opponent cannot see it.";
+   const logs=OG.yourState?.log||[],serialized=JSON.stringify(logs);
+   if(serialized!==onlineLastLog){onlineLastLog=serialized;$("#onlineLog").innerHTML=logs.map(l=>typeof l==="string"?'<li>'+esc(l)+'</li>':'<li>'+esc(QA[l.questionKey]||l.questionKey)+' → <b>'+(l.answer?'Yes':'No')+'</b></li>').join("");}
+ }
+ async function onlineAction(fn,...args){try{const r=await fn(OP.roomCode,OP.playerToken,...args);OG=r.game;if(r.answer!==undefined)$("#onlineAnswer").textContent=r.answer?"Yes!":"No.";if(r.correct!==undefined){$("#onlineAnswer").textContent=r.correct?"Correct guess! You win.":"Incorrect. The answer was "+(OG.characters[r.answerIndex]?.n||"unknown")+".";onlineGuessMode=false;}onlineRender();}catch(e){$("#onlineStatus").textContent=e.message||"Action failed.";}}
+ $("#createRoom").onclick=()=>onlineStart("create");$("#joinRoom").onclick=()=>onlineStart("join");
+ $("#onlineBack").onclick=()=>{$("#onlineLobby").classList.add("hide");$("#onlineLobby").classList.remove("on");$("#setup").classList.remove("hide");cfg.mode="cpu";syncSetup()};
+ $("#onlineExit").onclick=()=>{if(onlinePoll)clearInterval(onlinePoll);onlinePoll=null;OC=OG=OP=null;onlineGuessMode=false;try{sessionStorage.removeItem("whodat-online")}catch{}$("#onlineGame").classList.add("hide");$("#onlineLobby").classList.remove("on");$("#setup").classList.remove("hide");cfg.mode="cpu";syncSetup()};
+ $("#onlineGuess").onclick=()=>{onlineGuessMode=!onlineGuessMode;onlineRender()};
+ $("#onlineBoard").onclick=e=>{const b=e.target.closest("[data-oi]");if(!b||!OG||OG.status!=="active")return;const i=Number(b.dataset.oi);if(onlineGuessMode){if(OG.turn!==OG.player)return;onlineAction(OC.guess,i);return;}onlineAction(OC.eliminate,i)};
+ $("#onlineQuestions").onclick=e=>{const b=e.target.closest("[data-ok]");if(b&&OC&&OG&&OG.turn===OG.player)onlineAction(OC.ask,b.dataset.ok)};
+ $("#joinCode").addEventListener("input",e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-F0-9]/g,"").slice(0,6)});
+
+ // ---- Character Studio ----
 const AV=["🙂","😀","🤓","😎","🥳","🤠","👧","👦","👩","👨","🧓","👶","🐶","🐱","🐰","🦸"];
 let D={id:"",img:"",t:new Set()};
 const ticked=()=>new Set([...document.querySelectorAll("#st input:checked")].map(i=>i.value));

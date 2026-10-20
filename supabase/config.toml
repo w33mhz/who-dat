@@ -1,0 +1,4 @@
+project_id = "who-dat"
+
+[functions.online-game]
+verify_jwt = true
