@@ -46,7 +46,7 @@ body.calm .card{animation:none!important;transition:none}
 .hide{display:none}
 .studio label{display:block;font-size:.85rem}#st{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 10px}input[type=text]{font:inherit;padding:6px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%;max-width:420px}#sl{padding-left:18px}#sl li{margin:4px 0}
 
-#onlineLobby{display:none}#onlineLobby.on{display:block}.online-grid{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:840px){.online-grid{grid-template-columns:1fr 320px}}#onlineBoard{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}.online-card{position:relative;border:2px solid var(--line);border-radius:14px;padding:6px;background:var(--card);color:var(--fg);font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}.online-card span{font-size:.72rem;font-weight:700;text-align:center;overflow-wrap:anywhere}.online-card.out{opacity:.35;filter:grayscale(1);border-style:dashed}.online-card.selected{outline:3px solid var(--acc)}#onlineQuestions{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:320px;overflow:auto}.online-code{font-size:1.6rem;letter-spacing:.16em;font-weight:900}.online-note{font-size:.88rem;color:var(--mut)}
+#onlineLobby{display:none}#onlineLobby.on{display:block}.online-grid{display:grid;gap:10px;grid-template-columns:1fr}@media(min-width:840px){.online-grid{grid-template-columns:1fr 320px}}#onlineBoard{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}.online-card{position:relative;border:2px solid var(--line);border-radius:14px;padding:6px;background:var(--card);color:var(--fg);font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}.online-card span{font-size:.72rem;font-weight:700;text-align:center;overflow-wrap:anywhere}.online-card.out{opacity:.35;filter:grayscale(1);border-style:dashed}.online-card.selected{outline:3px solid var(--acc)}#onlineQuestions{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:320px;overflow:auto}.online-code{font-size:1.6rem;letter-spacing:.16em;font-weight:900}.online-note{font-size:.88rem;color:var(--mut)}#inviteQr{margin-top:10px;text-align:center}#inviteQr svg{max-width:100%;height:auto;background:#fff;padding:10px;border-radius:8px}#inviteQr p{font-size:.85rem;color:var(--mut)}
 </style></head>
 <body><div class="wrap">
 <h1>🕵️ Who Dat?</h1>
@@ -69,7 +69,7 @@ body.calm .card{animation:none!important;transition:none}
  <div class="err" id="sv" role="status"></div>
  <div class="panel"><h2>Your characters</h2><ul id="sl"></ul><p style="font-size:.8rem;margin:0">Needs 4 or more characters with different traits to be playable. Select “Our People” on the setup screen.</p></div>
 </section>
-<section id="onlineLobby" class="hide"><div class="panel"><h2>Online 2 Player</h2><p>Play from separate devices. Create a room and share its code, or join a friend.</p><p class="online-note">Requires a configured Supabase project.</p><label>Supabase project URL <input id="sbUrl" type="text" placeholder="https://your-project.supabase.co"></label><div style="height:8px"></div><label>Supabase anon key <input id="sbKey" type="text" placeholder="Public anon key"></label><div class="row"><button class="act" id="createRoom">Create room</button><label>Room code <input id="joinCode" type="text" maxlength="6" placeholder="ABC123" style="width:120px;text-transform:uppercase"></label><button class="act alt" id="joinRoom">Join room</button><button class="act alt" id="onlineBack">Back</button></div><div id="onlineLobbyStatus" class="err" role="status"></div></div></section><section id="onlineGame" class="hide"><div class="panel"><div class="row" style="justify-content:space-between;margin:0"><div><b>Online room</b> <span id="onlineRoomCode" class="online-code"></span></div><button class="act alt" id="onlineExit">Leave game</button></div><div id="onlineStatus" aria-live="polite"></div><div id="onlineAnswer" aria-live="assertive"></div></div><div class="online-grid"><div class="panel"><h2>Your character board</h2><div id="onlineBoard"></div></div><aside><div class="panel"><h2>Ask a question</h2><div id="onlineQuestions"></div><div class="row"><button class="act" id="onlineGuess">I know who!</button></div><div id="onlineHint" class="online-note"></div></div><div class="panel"><h2>History</h2><ol id="onlineLog"></ol></div></aside></div></section><section id="game" class="hide">
+<section id="onlineLobby" class="hide"><div class="panel"><h2>Online 2 Player</h2><p>Play from separate devices. Create a room and share its code, or join a friend.</p><p class="online-note"><span id="onlineConfigStatus">Connecting to the game service…</span> Game service settings are supplied automatically.</p><div class="row"><button class="act" id="createRoom">Create room</button><label>Room code <input id="joinCode" type="text" maxlength="6" placeholder="ABC123" style="width:120px;text-transform:uppercase"></label><button class="act alt" id="joinRoom">Join room</button><button class="act alt" id="onlineBack">Back</button></div><div id="onlineLobbyStatus" class="err" role="status"></div></div></section><section id="onlineGame" class="hide"><div class="panel"><div class="row" style="justify-content:space-between;margin:0"><div><b>Online room</b> <span id="onlineRoomCode" class="online-code"></span></div><button class="act alt" id="onlineExit">Leave game</button></div><div id="onlineStatus" aria-live="polite"></div><div id="onlineAnswer" aria-live="assertive"></div><div id="inviteTools" class="row hide"><button class="act alt" id="copyInvite">Copy invite link</button><button class="act alt" id="showInviteQr">Show QR code</button></div><div id="inviteQr" class="hide"><div id="inviteQrImage"></div><p>Scan to open Who Dat? with this room ready to join.</p></div><div id="inviteShareStatus" class="online-note" role="status"></div></div><div class="online-grid"><div class="panel"><h2>Your character board</h2><div id="onlineBoard"></div></div><aside><div class="panel"><h2>Ask a question</h2><div id="onlineQuestions"></div><div class="row"><button class="act" id="onlineGuess">I know who!</button></div><div id="onlineHint" class="online-note"></div></div><div class="panel"><h2>History</h2><ol id="onlineLog"></ol></div></aside></div></section><section id="game" class="hide">
  <div class="row" style="margin:0 0 6px"><b id="who"></b><span id="secret" class="panel" style="margin:0;padding:4px 10px"></span></div>
  <div id="status" aria-live="polite" style="font-weight:600"></div><div id="ans" aria-live="assertive"></div>
  <div class="main"><div id="board" role="group" aria-label="Character board"></div>
@@ -80,10 +80,12 @@ body.calm .card{animation:none!important;transition:none}
 </section></div>
 <div class="ov" id="pass" role="dialog" aria-modal="true"><div><p id="passMsg"></p><button class="act" id="ready">I'm ready</button></div></div>
 <div class="ov" id="end" role="dialog" aria-modal="true"><div><p id="endMsg"></p><button class="act" id="again">Play again</button></div></div>
+<script src="./supabase-config.js"></script>
 <script type="module">
 import {PACKS,Q,R} from "./src/data.js";
 import {createOnlineClient} from "./src/online.js";
 import {sanitizeCollection} from "./src/collections.js";
+import qrcode from "./src/vendor/qrcode-generator.mjs";
 import {has,questionsFor,rank,filter,resolve,reactionEvents,validatePack} from "./src/engine.js";
 const $=s=>document.querySelector(s),rnd=n=>Math.floor(Math.random()*n);
 let cfg={packs:["funny","fantasy","animals","food"],mode:"cpu",diff:"easy",auto:true,calm:false,speak:false};
@@ -162,15 +164,17 @@ $("#start").onclick=start;$("#again").onclick=start;
 $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.remove("hide");$("#pass").classList.remove("on");syncSetup()};
 
  // ---- Online multiplayer ----
- let OC=null, OG=null, OP=null, onlinePoll=null, onlineGuessMode=false, onlineLastLog="";
+ let OC=null, OG=null, OP=null, onlinePoll=null, onlineGuessMode=false, onlineLastLog="", inviteQrRoom="";
  const onlineSetStatus=t=>$("#onlineLobbyStatus").textContent=t;
  function onlineClient(){
-   const url=$("#sbUrl").value.trim(),key=$("#sbKey").value.trim();
-   if(!url||!key)throw new Error("Enter the Supabase project URL and public anon key. Never use the service-role key in the browser.");
-   return createOnlineClient({supabaseUrl:url,anonKey:key});
+   const config=window.WHO_DAT_SUPABASE;
+   if(!config?.url||!config?.anonKey)throw new Error("Online play is not configured for this site yet. Please try again later.");
+   return createOnlineClient({supabaseUrl:config.url,anonKey:config.anonKey});
  }
  function onlineCharacters(){return chars().map(c=>({id:c.id,n:c.n,e:c.e||"",t:Array.isArray(c.t)?c.t:Object.keys(c.t||{}).filter(k=>c.t[k])}));}
- function onlineSaveSession(roomCode,playerToken){try{sessionStorage.setItem("whodat-online",JSON.stringify({roomCode,playerToken,url:$("#sbUrl").value.trim(),key:$("#sbKey").value.trim()}))}catch{}}
+ function onlineSaveSession(roomCode,playerToken){try{sessionStorage.setItem("whodat-online",JSON.stringify({roomCode,playerToken}))}catch{}}
+ function inviteUrl(roomCode){const url=new URL(location.href);url.search="";url.hash="";url.searchParams.set("room",roomCode);return url.toString();}
+ function renderInviteQr(roomCode){if(inviteQrRoom===roomCode)return;const qr=qrcode(0,"M");qr.addData(inviteUrl(roomCode));qr.make();$("#inviteQrImage").innerHTML=qr.createSvgTag(5,3);$("#inviteQrImage svg")?.setAttribute("aria-label","QR code to join room "+roomCode);inviteQrRoom=roomCode;}
  async function onlineStart(action){
    try{
      OC=onlineClient();onlineSetStatus(action==="create"?"Creating room…":"Joining room…");
@@ -186,6 +190,8 @@ $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.r
    const chars=OG.characters||[],mine=OG.turn===OG.player&&OG.status==="active",waiting=OG.status==="waiting";
    keys=Object.keys(QA).filter(k=>chars.some(c=>Array.isArray(c.t)&&c.t.includes(k)));
    $("#onlineRoomCode").textContent=OG.roomCode||OP.roomCode;
+   $("#inviteTools").classList.toggle("hide",!waiting);
+   if(waiting)renderInviteQr(OG.roomCode||OP.roomCode);
    $("#onlineStatus").textContent=waiting?"Waiting for the other player to join. Share the room code above.":OG.status==="finished"?(OG.winner===OG.player?"You won!":"You lost this round."):(mine?"Your turn. Ask a yes/no question or make a final guess.":"Waiting for your opponent’s turn…");
    $("#onlineBoard").innerHTML=chars.map((c,i)=>{const out=(OG.yourState?.eliminated||[]).includes(i);return '<button class="online-card'+(out?' out':'')+(onlineGuessMode?' selected':'')+'" data-oi="'+i+'">'+portrait(c,64)+'<span>'+esc(c.n)+'</span></button>'}).join("");
    $("#onlineQuestions").innerHTML=keys.map(k=>'<button class="q" data-ok="'+esc(k)+'" '+(mine&&!(OG.yourState?.asked||[]).includes(k)?'':'disabled')+'>'+esc(label(k))+'</button>').join("");
@@ -202,6 +208,8 @@ $("#menu").onclick=()=>{$("#game").classList.add("hide");$("#setup").classList.r
  $("#onlineBoard").onclick=e=>{const b=e.target.closest("[data-oi]");if(!b||!OG||OG.status!=="active")return;const i=Number(b.dataset.oi);if(onlineGuessMode){if(OG.turn!==OG.player)return;onlineAction(OC.guess,i);return;}onlineAction(OC.eliminate,i)};
  $("#onlineQuestions").onclick=e=>{const b=e.target.closest("[data-ok]");if(b&&OC&&OG&&OG.turn===OG.player)onlineAction(OC.ask,b.dataset.ok)};
  $("#joinCode").addEventListener("input",e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-F0-9]/g,"").slice(0,6)});
+ $("#copyInvite").onclick=async()=>{const link=inviteUrl(OP.roomCode);try{await navigator.clipboard.writeText(link);$("#inviteShareStatus").textContent="Invite link copied. Send it to your friend."}catch{$("#inviteShareStatus").textContent=link}};
+ $("#showInviteQr").onclick=()=>{$("#inviteQr").classList.toggle("hide");$("#showInviteQr").textContent=$("#inviteQr").classList.contains("hide")?"Show QR code":"Hide QR code"};
 
  // ---- Character Studio ----
 const AV=["🙂","😀","🤓","😎","🥳","🤠","👧","👦","👩","👨","🧓","👶","🐶","🐱","🐰","🦸"];
@@ -233,4 +241,9 @@ $("#si").onchange=async e=>{const f=e.target.files[0];if(!f)return;
 $("#goStudio").onclick=()=>{$("#setup").classList.add("hide");$("#studio").classList.remove("hide");studioRender()};
 $("#sback").onclick=()=>{$("#studio").classList.add("hide");$("#setup").classList.remove("hide");syncSetup()};
 syncSetup();
+const invitedRoom=new URLSearchParams(location.search).get("room");
+if(invitedRoom&&/^[0-9A-Fa-f]{6}$/.test(invitedRoom)){
+ $("#joinCode").value=invitedRoom.toUpperCase();cfg.mode="online";save();syncSetup();$("#setup").classList.add("hide");$("#onlineLobby").classList.remove("hide");$("#onlineLobby").classList.add("on");onlineSetStatus("Invite link loaded. Join the room when you’re ready.");
+}
+$("#onlineConfigStatus").textContent=window.WHO_DAT_SUPABASE?.url?"Connected automatically to the game service.":"The game service configuration is unavailable.";
 </script></body></html>
